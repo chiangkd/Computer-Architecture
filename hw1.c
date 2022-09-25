@@ -27,15 +27,24 @@ struct ListNode *deleteDuplicates(struct ListNode *head)
     for(struct ListNode *n = head->next ; n ;n = n-> next) {
         if(n->next && n->val == n->next->val) {
             struct ListNode *npt = n->next; // use to store n->next
+            struct ListNode *freenode = n;
             while(npt && n->val == npt->val){
+                struct ListNode *freenode_t = npt;
                 npt = npt->next;
+                free(freenode_t);
                 n->next = npt;
+                
                 if(npt && npt->next && npt->val == npt->next->val) {
                     npt = npt->next;
                     n = npt;
+                    
+                    free(freenode);
                 }
+                
             }
+            struct ListNode *freenode_e = n;
             n = n->next;
+            free(freenode_e);
         }
         c->next = n;
         c = n;
@@ -68,6 +77,15 @@ void print_list(struct ListNode *head)
     printf("\n");
 }
 
+void free_list(struct ListNode *head)
+{
+    while(head){
+        struct ListNode *freenode = head;
+        head = head->next;
+        free(freenode);
+    }
+    return;
+}
 
 
 int main(){
@@ -88,6 +106,7 @@ int main(){
     testcase1 = deleteDuplicates(testcase1);
     printf("after delete: \n");
     print_list(testcase1);
+    free_list(testcase1);
 
     printf("=== test 2 === \n");
     testcase2 = initial_list(testcase2, arr2, LEN2);
@@ -97,6 +116,7 @@ int main(){
     testcase2 = deleteDuplicates(testcase2);
     printf("after delete: \n");
     print_list(testcase2);
+    free_list(testcase2);
 
     printf("=== test 3 === \n");
     testcase3 = initial_list(testcase3, arr3, LEN3);
@@ -106,6 +126,7 @@ int main(){
     testcase3 = deleteDuplicates(testcase3);
     printf("after delete: \n");
     print_list(testcase3);
+    free_list(testcase3);
 
 
     return 0;
