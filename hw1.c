@@ -57,7 +57,7 @@ struct ListNode* initial_list(struct ListNode *head, int *arr, int arr_len)
 {
     struct ListNode *c = head;
 
-    c->val = (int)arr[0];
+    c->val = arr[0];
     for(int i = 0; i < arr_len-1; i++) {
         struct ListNode *next = malloc(sizeof(struct ListNode));
         next->val = arr[i+1];
