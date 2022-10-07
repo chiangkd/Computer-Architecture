@@ -16,30 +16,28 @@ main:
     li a7, 4
     ecall
     ################# test case 1 #################
-    lw t0, len1         # load array length value
-    la t1, test1        # load array address
-    jal ra, initialize_list
-    mv t1, s0                    # t1 = list head
+    la a0, test1        # a0 = arr
+    lw a1, len1         # a1 = arr_len
+
+    jal ra, initialize_list      # a0 = return value = struct ListNode head
     jal ra, runtestcase
     
     la a0, divider
     li a7, 4
     ecall
     ################# test case 2 #################
-    lw t0, len2         # load array length value
-    la t1, test2        # load array address
+    la a0, test2        # a0 = arr
+    lw a1, len2         # a1 = arr_len
     jal ra, initialize_list
-    mv t1, s0                    # t1 = list head
     jal ra, runtestcase
     
     la a0, divider
     li a7, 4
     ecall
     ################# test case 3 #################
-    lw t0, len3         # load array length value
-    la t1, test3        # load array address
+    la a0, test3        # a0 = arr
+    lw a1, len3         # a1 = arr_len
     jal ra, initialize_list
-    mv t1, s0                    # t1 = list head
     jal ra, runtestcase
     ###############################################
     la a0, divider
@@ -49,25 +47,34 @@ main:
 
 runtestcase:
     # prologue
-    addi sp, sp, -4
+    addi sp, sp, -8
     sw ra, 0(sp)
-    
+    sw a0, 4(sp)
+    # print messsage
+    # a0 need to handle the print msg for printf system call,
+    # so just temporary mv list head to t1
+    mv t1, a0        # t1 = list head
     la a0, bef_msg
     li a7, 4
     ecall
+    # print end
+    
     jal ra, print_list
+    
+    
     la a0, aft_msg
     li a7, 4
     ecall
     
-    mv t1, s0                    # t1 = list head
+    lw t1, 4(sp)                    # t1 = list head
     jal ra, deleteDuplicates
     mv t1, s2                    # t1 = list head
     jal ra, print_list
     
     # epilogue
     lw ra, 0(sp)        # back to main
-    addi sp, sp, 4
+    lw a0, 4(sp)
+    addi sp, sp, 8
     jr ra
 
 initialize_list:
@@ -76,7 +83,8 @@ initialize_list:
     sw ra, 0(sp)
     
     # body
-    
+    addi t0, a1, -1     # t0 = arr_len - 1
+    mv t1, a0           # t1 = arr
     lw t2, 0(t1)        # load array value
     
     li s0, 0x20000000   # s0 will handle the address of each list node
@@ -85,22 +93,22 @@ initialize_list:
     jal ra malloc       # struct ListNode *head = malloc 
     
     sw t2, 0(s0)        # head->val = arr[0];
-    mv t2, s0           # struct ListNode *c = head;
+    mv t3, s0           # struct ListNode *c = head;
     
     addi s0, s0, 8 
     li s1, 0            # i == 0
-    addi t0, t0, -1     # t0 = arr_len - 1
+    
     
 loop:
     jal ra malloc       # struct ListNode *next = malloc    
     
     addi t1, t1, 4      # push array by 4 (int)
-    lw t3, 0(t1)        # arr[i+1]
-    sw t3, 0(s0)        # next->val = arr[i+1]
+    lw t2, 0(t1)        # arr[i+1]
+    sw t2, 0(s0)        # next->val = arr[i+1]
     
     
-    sw s0, 4(t2)        # c -> next = next
-    addi t2, t2, 8      # push heap 8 byte
+    sw s0, 4(t3)        # c -> next = next
+    addi t3, t3, 8      # push heap 8 byte
     
     addi s1, s1, 1      # i++
 
@@ -109,10 +117,10 @@ loop:
     bne s1, t0 loop     # for loop condition
     
     #addi s0,s0,4        # End position
-    sw x0, 4(t2)
+    sw x0, 4(t3)
     
     lw ra, 0(sp)        # load return address
-    lw s0, 4(sp)        # load list head address
+    lw a0, 4(sp)        # load list head address
     addi sp, sp, 8
     
     jr ra
@@ -126,7 +134,7 @@ print_list:
     li a7, 11           # print char
     ecall
     
-    lw t1, 4(t1)        # load value from next
+    lw t1, 4(t1)        # t1 = t1->next
     
     bne t1, x0 print_list
     
