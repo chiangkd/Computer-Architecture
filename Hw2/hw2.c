@@ -1,11 +1,11 @@
 #include<stdio.h>
-#include<stdlib.h>
-#include <stdbool.h>
-bool isAnagram(char * s, char * t)
+#include<time.h>
+
+#define __ARCH_WANT_TIME32_SYSCALLS
+int isAnagram(char * s, char * t)
 {
     int letter_freq[26] = {0}; //store frequency of every letter
-	
-    // calculate frequency of every letter of s
+
     for (int i = 0; s[i]; i++) {
         letter_freq[s[i] - 'a']++;
     }
@@ -16,38 +16,43 @@ bool isAnagram(char * s, char * t)
     // if letter_freq[i] != 0, it mean in letter char(i + 'a') frequency of letter of s and t are not same. 
     for (int i = 0; i < 26; i++) {
         if (letter_freq[i]) 
-            return false;
+            return 0;
     }
-    return true; // all of letter of frequency are same
+    return 1; // all of letter of frequency are same
 }
 
 int main() {
-	char *test_1_s = "anagram";
-	char *test_1_t = "nagaram";
+	char *test_1_s = "anagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagram";
+	char *test_1_t = "anagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagramanagram";
 
 	char *test_2_s = "rat";
-	char *test_2_t = "car";
+	char *test_2_t = "anagram";
 
 	char *test_3_s = "tseng";
 	char *test_3_t = "gnest";
-    /*
-	printf("test_1 ans is true, got %s \n", isAnagram(test_1_s, test_1_t) ? "true" : "false");
-	printf("test_2 ans is false, got %s \n", isAnagram(test_2_s, test_2_t) ? "true" : "false");
-	printf("test_3 ans is true, got %s \n", isAnagram(test_3_s, test_3_t) ? "true" : "false");
-    */
+
+
+    clock_t time_start = clock();
+    
     if ( 1 == isAnagram(test_1_s, test_1_t)) {
-        printf("test_1: correct");
+        printf("test_1: correct\n");
     } else {
-        printf("test_1: not_correct");
+        printf("test_1: not_correct\n");
     }
     if ( 0 == isAnagram(test_2_s, test_2_t)) {
-        printf("test_2: correct");
+        // printf("test_2: correct\n");
     } else {
-        printf("test_2: not_correct");
+        // printf("test_2: not_correct\n");
     }
     if ( 1 == isAnagram(test_3_s, test_3_t)) {
-        printf("test_2: correct");
+        // printf("test_3: correct\n");
     } else {
-        printf("test_2: not_correct");
+        // printf("test_3: not_correct\n");
     }
+
+    clock_t time_end = clock();
+
+    fprintf(stderr, "clock gettime time = %d ms\n", (time_end - time_start) * 1000/CLOCKS_PER_SEC);
+
+    
 }
