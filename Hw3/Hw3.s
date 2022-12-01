@@ -11,9 +11,170 @@
     iformat: .string "%d,"
     xformat: .string "%x\n"
 
+.macro printAns
+    # a0 = res
+    # a1 = k (cond.k)
+    # a2 = returnSize (cond.returnSize)
+    mv s2, a1                           # return Size = 3
+    mv s3, a2                           # k = 4
+    addi sp, sp, -4
+    sw ra, 0(sp)
+
+    mv s1, a0                   # s1 = res
+    la a0, lbracket
+    call printf
+    li s4, 0                    # int i = 0
+    li s5, 0                    # int j = 0
+printloop1:
+
+    la a0, lbracket
+    call printf
+
+    li s4, 0                    # int j = 0
+
+printloop2:
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++   
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++
+
+    beq s4, s2, loop2out
+    lw a1, 0(s1)                # res[i]
+
+    addi s1, s1, 0x4            # res[i][j] address offset
+    la a0, iformat
+    call printf
+
+    addi s4, s4, 1              # i++
+    j printloop2
+#    bne s4, s2, printloop2      # j < returnColumnSizes
+
+
+loop2out:
+    la a0, backspace
+    call printf
+
+    la a0, rbracket
+    call printf
+
+    la a0, comma
+    call printf
+
+    addi s5, s5, 1              # i++
+    bne s5, s3, printloop1      # i < returnSize
+
+    la a0, backspace
+    call printf
+
+    la a0, rbracket
+    call printf
+
+    la a0, newline
+    call printf
+
+    lw ra, 0(sp)
+    addi sp, sp, 4
+#    ret
+
+.endm
+
+.macro combine
+    # a0 = &cond
+    # 0(a0) = cond->n
+    # 4(a0) = cond->k
+    # 8(a0) = cond->returnSize
+
+
+    addi sp, sp, -24
+    sw ra, 0(sp)
+    mv a3, a0           # a3 = cond
+    addi a0, a0, -2000      # a0 = address of **res
+    addi a1, a0, -2000    # a1 = address of line[cond->k]   
+    li a2, 0            # a2 = lineSize
+    li a4, 1            # a4 = 1
+    
+    sw a0, 4(sp)
+    sw a1, 8(sp)
+    sw a2, 12(sp)
+    sw a3, 16(sp)
+    sw a4, 20(sp)
+    
+    call GetLineSize
+
+    lw ra, 0(sp)
+    lw a0, 4(sp)        # res
+    lw a1, 8(sp)        # line
+    lw a2, 12(sp)       # lineSize
+    lw a3, 16(sp)       # cond
+    lw a4, 20(sp)       # idx
+    addi sp, sp, 24
+#    ret
+.endm
+
+.macro memcpy
+    # a0 dest
+    # a1 src
+    # a2 n
+    #slli t5, a2, 0x2
+    li t3, 0        # i = 0
+
+mcpyloop:
+    lw t4, 0(a1)
+    sw t4, 0(a0)
+
+    addi a0, a0, 4
+    addi a1, a1, 4
+    addi t3, t3, 4
+    bne t3, a2, mcpyloop
+#    ret 
+.endm
+
+
 .text
 
 .global main
+
 
 main:
     addi sp, sp, -4
@@ -31,13 +192,13 @@ main:
     sw t0, 4(a0)
     sw x0, 8(a0)       # cond.returnSize = 0
 
-    call combine
+    combine
     # a0 = res
 
     lw a1, 4(a3)    # a1 = cond.k
     lw a2, 8(a3)    # a2 = cond.returnSize
     
-    call printAns
+    printAns
 
     # pop sp
     lw t0, n
@@ -52,22 +213,7 @@ main:
     li a0, 0
     ret
 
-memcpy:
-    # a0 dest
-    # a1 src
-    # a2 n
-    #slli t5, a2, 0x2
-    li t3, 0        # i = 0
 
-mcpyloop:
-    lw t4, 0(a1)
-    sw t4, 0(a0)
-
-    addi a0, a0, 4
-    addi a1, a1, 4
-    addi t3, t3, 4
-    bne t3, a2, mcpyloop
-    ret 
 
 GetLineSize:
     # a0 = res
@@ -108,7 +254,7 @@ PutLineIn:
     slli a2, t2, 0x2    # a2 = sizoef(int) * cond->k
     sw a2, 20(sp)       # store offset
 
-    call memcpy
+    memcpy
     lw a0, 0(sp)        # res
     lw a1, 4(sp)        # line
     lw a2, 8(sp)        # lineSize
@@ -154,95 +300,4 @@ Normalreturn:
     mv s2, a2
     mv s3, a4
 
-    ret
-
-
-combine:
-    # a0 = &cond
-    # 0(a0) = cond->n
-    # 4(a0) = cond->k
-    # 8(a0) = cond->returnSize
-
-
-    addi sp, sp, -24
-    sw ra, 0(sp)
-    mv a3, a0           # a3 = cond
-    addi a0, a0, -2000      # a0 = address of **res
-    addi a1, a0, -2000    # a1 = address of line[cond->k]   
-    li a2, 0            # a2 = lineSize
-    li a4, 1            # a4 = 1
-    
-    sw a0, 4(sp)
-    sw a1, 8(sp)
-    sw a2, 12(sp)
-    sw a3, 16(sp)
-    sw a4, 20(sp)
-    
-    call GetLineSize
-
-    lw ra, 0(sp)
-    lw a0, 4(sp)        # res
-    lw a1, 8(sp)        # line
-    lw a2, 12(sp)       # lineSize
-    lw a3, 16(sp)       # cond
-    lw a4, 20(sp)       # idx
-    addi sp, sp, 24
-    ret
-
-
-printAns:
-
-    # a0 = res
-    # a1 = k (cond.k)
-    # a2 = returnSize (cond.returnSize)
-    mv s2, a1                           # return Size = 3
-    mv s3, a2                           # k = 4
-    addi sp, sp, -4
-    sw ra, 0(sp)
-
-    mv s1, a0                   # s1 = res
-    la a0, lbracket
-    call printf
-    li s4, 0                    # int i = 0
-    li s5, 0                    # int j = 0
-printloop1:
-
-    la a0, lbracket
-    call printf
-
-    li s4, 0                    # int j = 0
-
-printloop2:
-    lw a1, 0(s1)                # res[i]
-
-    addi s1, s1, 0x4            # res[i][j] address offset
-    la a0, iformat
-    call printf
-
-    addi s4, s4, 1              # i++
-    bne s4, s2, printloop2      # j < returnColumnSizes
-
-    la a0, backspace
-    call printf
-
-    la a0, rbracket
-    call printf
-
-    la a0, comma
-    call printf
-
-    addi s5, s5, 1              # i++
-    bne s5, s3, printloop1      # i < returnSize
-
-    la a0, backspace
-    call printf
-
-    la a0, rbracket
-    call printf
-
-    la a0, newline
-    call printf
-
-    lw ra, 0(sp)
-    addi sp, sp, 4
     ret
