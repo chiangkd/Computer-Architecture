@@ -16,7 +16,6 @@
 .global main
 
 main:
-    li t1, 0
     addi sp, sp, -4
     sw ra, 0(sp)
 
@@ -26,7 +25,7 @@ main:
     sub sp, sp, t0
 
     mv a0, sp           # a0 = &cond
-    li t0, 7            # cond.n = 4
+    li t0, 4            # cond.n = 4
     sw t0, 0(a0)
     li t0, 3            # cond.k = 3
     sw t0, 4(a0)
@@ -90,21 +89,24 @@ PutLineIn:
     # a2 = lineSize
     # a3 = cond
     # a4 = idx
-    addi sp, sp, -24
+    addi sp, sp, -28
     sw a0, 0(sp)
     sw a1, 4(sp)
     sw a2, 8(sp)
     sw a3, 12(sp)
     sw a4, 16(sp)
 
-    lw t2, 20(sp)
+
+    lw t2, 20(sp)       # load offset
+    lw t1, 24(sp)       # load offset
 
     add t1, t2, t1
+    sw t1, 24(sp)       # store offset
     add a0, a0, t1      # a0 = res[cond->returnSize]
     lw t2, 4(a3)        # t2 = cond->k
 
     slli a2, t2, 0x2    # a2 = sizoef(int) * cond->k
-    sw a2, 20(sp)       # store offset                      # Here can do some improvement
+    sw a2, 20(sp)       # store offset
 
     call memcpy
     lw a0, 0(sp)        # res
@@ -113,7 +115,7 @@ PutLineIn:
     lw a3, 12(sp)       # cond
     lw a4, 16(sp)       # idx
     
-    addi sp, sp, 24
+    addi sp, sp, 28
     addi t5, t5, 1      # cond->returnSize++
     sw t5, 8(a3)        # store returnSize back
     lw ra, 0(sp)
@@ -127,8 +129,9 @@ GLSrecursive:
     
     blt t0, s3, Normalreturn
     #addi t0, t0, 1
+
 GLSloop:
-    
+
     slli t3, s2, 0x2            # t3 = line[lineSize] offset
     add t4, a1, t3              # t4 = line[lineSize] address
     sw s3, 0(t4)                # line[lineSize] = i
